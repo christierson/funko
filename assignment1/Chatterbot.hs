@@ -146,13 +146,10 @@ matchCheck = matchTest == Just testSubstitutions
 
 -- Applying a single pattern
 transformationApply :: Eq a => a -> ([a] -> [a]) -> [a] -> ([a], [a]) -> Maybe [a]
-transformationApply wc f ps t = substitute wc (snd t) $ match wc (fst t) ps
-{- TO BE WRITTEN -}
+transformationApply wc f ps t = mmap (substitute wc (snd t)) $ match wc (fst t) ps
 
 
 -- Applying a list of patterns until one succeeds
 transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
 transformationsApply _ _ _ _ = Nothing
 {- TO BE WRITTEN -}
-
-
