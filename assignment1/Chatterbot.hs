@@ -34,8 +34,9 @@ rulesApply :: [PhrasePair] -> Phrase -> Phrase
 rulesApply _ = id
 
 reflect :: Phrase -> Phrase
-{- TO BE WRITTEN -}
-reflect = id
+reflect phrase = map (\x -> if ref == "" then x else ref) phrase where ref = snd $ filter ((==x).fst) reflections
+--reflect phrase = [if reflection == "" then x else reflection | x <- phrase] where reflection = snd $ filter ((==x).fst) reflections
+--reflect (p:ps) = snd $ filter ((==p).fst) reflections
 
 reflections =
   [ ("am",     "are"),
