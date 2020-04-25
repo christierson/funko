@@ -105,10 +105,10 @@ reductionsApply _ = id
 
 -- Replaces a wildcard in a list with the list given as the third argument
 substitute :: Eq a => a -> [a] -> [a] -> [a]
-substitute w [] ys = []
-substitute w (x:xs) ys
-  | w == x = concat [ys, substitute w xs ys]
-  | otherwise = x : substitute w xs ys
+substitute wc [] ys = []
+substitute wc (x:xs) ys
+  | wc == x = concat [ys, substitute wc xs ys]
+  | otherwise = x : substitute wc xs ys
 
 
 -- Tries to match two lists. If they match, the result consists of the sublist
@@ -146,7 +146,7 @@ matchCheck = matchTest == Just testSubstitutions
 
 -- Applying a single pattern
 transformationApply :: Eq a => a -> ([a] -> [a]) -> [a] -> ([a], [a]) -> Maybe [a]
-transformationApply _ _ _ _ = Nothing
+transformationApply wc f ps t = substitute wc (snd t) $ match wc (fst t) ps
 {- TO BE WRITTEN -}
 
 
