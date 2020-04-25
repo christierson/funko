@@ -141,13 +141,12 @@ matchTest = match '*' testPattern testString
 matchCheck = matchTest == Just testSubstitutions
 
 -------------------------------------------------------
--- Applying patternsfgdfg
+-- Applying patterns
 --------------------------------------------------------
 
 -- Applying a single pattern
 transformationApply :: Eq a => a -> ([a] -> [a]) -> [a] -> ([a], [a]) -> Maybe [a]
-transformationApply wc f xs t = mmap (substitute wc (snd t)) $ match wc (fst t) xs
-
+transformationApply wc f xs (k,v) = mmap (substitute wc v) $ mmap (f) $ match wc k xs
 
 -- Applying a list of patterns until one succeeds
 transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
