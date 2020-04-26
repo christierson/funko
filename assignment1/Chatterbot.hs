@@ -34,9 +34,11 @@ rulesApply :: [PhrasePair] -> Phrase -> Phrase
 rulesApply _ = id
 
 reflect :: Phrase -> Phrase
-reflect phrase = map (\x -> if ref == "" then x else ref) phrase where ref = snd $ filter ((==x).fst) reflections
---reflect phrase = [if reflection == "" then x else reflection | x <- phrase] where reflection = snd $ filter ((==x).fst) reflections
---reflect (p:ps) = snd $ filter ((==p).fst) reflections
+reflect [] = []
+reflect (p:ps)
+  | not $ reflection == [] = (snd . head) reflection : reflect ps
+  | otherwise = p : reflect ps
+  where reflection = filter ((==p).fst) reflections
 
 reflections =
   [ ("am",     "are"),
@@ -153,4 +155,3 @@ transformationApply wc f xs (k,v) = mmap (substitute wc v) $ mmap (f) $ match wc
 transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
 transformationsApply _ _ [] _ = Nothing
 transformationsApply wc f (t:ts) xs = orElse (transformationApply wc f xs t) (transformationsApply wc f ts xs)
-
