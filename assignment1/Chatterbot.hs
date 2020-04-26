@@ -33,11 +33,12 @@ rulesApply :: [PhrasePair] -> Phrase -> Phrase
 rulesApply t p = maybe [] id $ transformationsApply "*" reflect t p
 
 reflect :: Phrase -> Phrase
-reflect [] = []
-reflect (p:ps)
-  | not $ reflection == [] = (snd . head) reflection : reflect ps
-  | otherwise = p : reflect ps
-  where reflection = filter ((==p).fst) reflections
+reflect p = (map . try . flip lookup) reflections p
+--reflect [] = []
+--reflect (p:ps)
+--  | not $ reflection == [] = (snd . head) reflection : reflect ps
+--  | otherwise = p : reflect ps
+--  where reflection = filter ((==p).fst) reflections
 
 reflections =
   [ ("am",     "are"),
