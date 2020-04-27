@@ -26,8 +26,10 @@ type BotBrain = [(Phrase, [Phrase])]
 --------------------------------------------------------
 
 stateOfMind :: BotBrain -> IO (Phrase -> Phrase)
-{- TO BE WRITTEN -}
 stateOfMind _ = return id
+--stateOfMind b = do
+--  r <- randomIO
+--  maybe [] id $ lookup (words input) b
 
 rulesApply :: [PhrasePair] -> Phrase -> Phrase
 rulesApply t p = maybe [] id $ transformationsApply "*" reflect t p
@@ -71,9 +73,13 @@ present = unwords
 prepare :: String -> Phrase
 prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!#%&|") 
 
+test = [
+  ("",["empty"]),
+  ("*key*", ["key response 1", "key response 2", "key response 3"]),
+  ("*", ["anything 1", "anything 2"])] :: [(String, [String])]
+
 rulesCompile :: [(String, [String])] -> BotBrain
-{- TO BE WRITTEN -}
-rulesCompile _ = []
+rulesCompile brain = (map . map2) (words, map words) brain
 
 
 --------------------------------------
@@ -154,4 +160,6 @@ transformationApply wc f xs (k,v) = mmap (substitute wc v) $ mmap (f) $ match wc
 -- Applying a list of patterns until one succeeds
 transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
 transformationsApply _ _ [] _ = Nothing
-transformationsApply wc f (t:ts) xs = orElse (transformationApply wc f xs t) (transformationsApply wc f ts xs)
+transformationsApply wc f (t:ts) xs = orElse
+  (transformationApply wc f xs t)
+  (transformationsApply wc f ts xs)
