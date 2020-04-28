@@ -27,9 +27,10 @@ type BotBrain = [(Phrase, [Phrase])]
 
 stateOfMind :: BotBrain -> IO (Phrase -> Phrase)
 stateOfMind _ = return id
---stateOfMind b = do
---  r <- randomIO
---  maybe [] id $ lookup (words input) b
+stateOfMind b = do
+  r <- randomIO :: IO Float
+  --return pick r $ maybe [] id $ lookup (words "whats the point of life?") b
+  return $ rulesApply $ (map . map2) (id, pick r) b
 
 rulesApply :: [PhrasePair] -> Phrase -> Phrase
 rulesApply t p = maybe [] id $ transformationsApply "*" reflect t p
