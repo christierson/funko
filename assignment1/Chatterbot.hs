@@ -56,7 +56,6 @@ reflections =
     ("you",    "me")
   ]
 
-
 ---------------------------------------------------------------------------------
 
 endOfDialog :: String -> Bool
@@ -67,11 +66,6 @@ present = unwords
 
 prepare :: String -> Phrase
 prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!?#%&|") 
-
---test = [
---  ("",["empty"]),
---  ("*key*", ["key response 1", "key response 2", "key response 3"]),
---  ("*", ["anything 1", "anything 2"])] :: [(String, [String])]
 
 rulesCompile :: [(String, [String])] -> BotBrain
 rulesCompile brain = (map . map2) (words . map toLower, map words) brain
@@ -97,9 +91,7 @@ reduce :: Phrase -> Phrase
 reduce = reductionsApply reductions
 
 reductionsApply :: [PhrasePair] -> Phrase -> Phrase
-{- TO BE WRITTEN -}
-reductionsApply _ = id
-
+reductionsApply p = fix $ try $ transformationsApply "*" id p
 
 -------------------------------------------------------
 -- Match and substitute
