@@ -29,7 +29,6 @@ stateOfMind :: BotBrain -> IO (Phrase -> Phrase)
 stateOfMind _ = return id
 stateOfMind b = do
   r <- randomIO :: IO Float
-  --return pick r $ maybe [] id $ lookup (words "whats the point of life?") b
   return $ rulesApply $ (map . map2) (id, pick r) b
 
 rulesApply :: [PhrasePair] -> Phrase -> Phrase
@@ -74,13 +73,13 @@ present = unwords
 prepare :: String -> Phrase
 prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!#%&|") 
 
-test = [
-  ("",["empty"]),
-  ("*key*", ["key response 1", "key response 2", "key response 3"]),
-  ("*", ["anything 1", "anything 2"])] :: [(String, [String])]
+--test = [
+--  ("",["empty"]),
+--  ("*key*", ["key response 1", "key response 2", "key response 3"]),
+--  ("*", ["anything 1", "anything 2"])] :: [(String, [String])]
 
 rulesCompile :: [(String, [String])] -> BotBrain
-rulesCompile brain = (map . map2) (words, map words) brain
+rulesCompile brain = (map . map2) (words . map toLower, map words) brain
 
 
 --------------------------------------
