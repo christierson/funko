@@ -26,7 +26,6 @@ type BotBrain = [(Phrase, [Phrase])]
 --------------------------------------------------------
 
 stateOfMind :: BotBrain -> IO (Phrase -> Phrase)
-stateOfMind _ = return id
 stateOfMind b = do
   r <- randomIO :: IO Float
   return $ rulesApply $ (map . map2) (id, pick r) b
@@ -36,11 +35,7 @@ rulesApply t p = maybe [] id $ transformationsApply "*" reflect t p
 
 reflect :: Phrase -> Phrase
 reflect p = (map . try . flip lookup) reflections p
---reflect [] = []
---reflect (p:ps)
---  | not $ reflection == [] = (snd . head) reflection : reflect ps
---  | otherwise = p : reflect ps
---  where reflection = filter ((==p).fst) reflections
+
 
 reflections =
   [ ("am",     "are"),
@@ -71,7 +66,7 @@ present :: Phrase -> String
 present = unwords
 
 prepare :: String -> Phrase
-prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!#%&|") 
+prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!?#%&|") 
 
 --test = [
 --  ("",["empty"]),
@@ -81,9 +76,7 @@ prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!#%&|")
 rulesCompile :: [(String, [String])] -> BotBrain
 rulesCompile brain = (map . map2) (words . map toLower, map words) brain
 
-
 --------------------------------------
-
 
 reductions :: [PhrasePair]
 reductions = (map.map2) (words, words)
@@ -155,7 +148,7 @@ matchCheck = matchTest == Just testSubstitutions
 
 -- Applying a single pattern
 transformationApply :: Eq a => a -> ([a] -> [a]) -> [a] -> ([a], [a]) -> Maybe [a]
-transformationApply wc f xs (k,v) = mmap (substitute wc v) $ mmap (f) $ match wc k xs
+transformationApply wc f xs (k,v) = mmap (substitute wc v . f) (match wc k xs)
 
 -- Applying a list of patterns until one succeeds
 transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
