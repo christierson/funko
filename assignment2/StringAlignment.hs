@@ -39,4 +39,23 @@ module StringAlignment where
     maximaBy f xs = filter (\x -> f x == m) xs
         where m = maximum $ map f xs
 
+    type AlignmentType = (String,String)
 
+    score :: String -> String -> Int
+    score string [] = (*scoreSpace) $ length string
+    score [] string = (*scoreSpace) $ length string
+    score (x:xs) (y:ys)
+        | x == '-' = scoreSpace + rest
+        | y == '-' = scoreSpace + rest
+        | x == y = scoreMatch + rest
+        | otherwise = scoreMismatch + rest
+            where rest = score xs ys
+
+    optAlignments :: String -> String -> [AlignmentType]
+    optAlignments [] [] = [("","")]
+    optAlignments (x:xs) [] = attachHeads x '-' (optAlignments xs [])
+    optAlignments [] (y:ys) = attachHeads '-' y (optAlignments [] ys)
+    optAlignments (x:xs) (y:ys) = maximaBy (\(a, b) -> score a b) 
+        (attachHeads x y (optAlignments xs ys)) ++
+        (attachHeads x '-' (optAlignments xs (y:ys))) ++
+        (attachHeads '-' y (optAlignments (x:xs) ys))
