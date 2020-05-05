@@ -12,11 +12,7 @@ module StringAlignment where
     string4 = "functionalprogrammingrules"
     string5 = "bananrepubliksinvasionsarmestabsadjutant"
     string6 = "kontrabasfiolfodralmakarmästarlärling"
-
-    attachHeads :: a -> a -> [([a],[a])] -> [([a],[a])]
-    attachHeads h1 h2 aList = [(h1:xs,h2:ys) | (xs,ys) <- aList]
     
-
     -- ANVÄNDER SAMMA LOOKUP-TABELL SOM I MCS-PROBLEMET --
     similarityScore :: String -> String -> Int
     similarityScore xs ys = getEntry (length xs) (length ys)
@@ -35,5 +31,12 @@ module StringAlignment where
                 where
                     x = xs !! (i - 1)
                     y = ys !! (j - 1)
+
+    attachHeads :: a -> a -> [([a],[a])] -> [([a],[a])]
+    attachHeads h1 h2 aList = [(h1:xs,h2:ys) | (xs,ys) <- aList]
+
+    maximaBy :: Ord b => (a -> b) -> [a] -> [a]
+    maximaBy f xs = filter (\x -> f x == m) xs
+        where m = maximum $ map f xs
 
 
