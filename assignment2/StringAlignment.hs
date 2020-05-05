@@ -26,8 +26,6 @@ module StringAlignment where
             entry _ 0 = 0
             entry 0 _ = 0
             entry i j = charScore x y + max (getEntry i (j - 1)) (getEntry (i - 1) j)
---                | x == y = 1 + getEntry (i - 1) (j - 1)
---                | otherwise = max (getEntry i (j - 1)) (getEntry (i - 1) j)
                 where
                     x = xs !! (i - 1)
                     y = ys !! (j - 1)
@@ -48,7 +46,6 @@ module StringAlignment where
         | x == y = scoreMatch
         | otherwise = scoreMismatch
 
-
     score :: String -> String -> Int
     score string [] = (*scoreSpace) $ length string
     score [] string = (*scoreSpace) $ length string
@@ -58,7 +55,26 @@ module StringAlignment where
     optAlignments [] [] = [("","")]
     optAlignments (x:xs) [] = attachHeads x '-' $ optAlignments xs []
     optAlignments [] (y:ys) = attachHeads '-' y $ optAlignments [] ys
-    optAlignments (x:xs) (y:ys) = maximaBy (uncurry score)
-        (attachHeads x      y   (optAlignments xs       ys      )) ++
-        (attachHeads x      '-' (optAlignments xs       (y:ys)  )) ++
-        (attachHeads '-'    y   (optAlignments (x:xs)   ys      ))
+    optAlignments (x:xs) (y:ys) = maximaBy (uncurry score) $ xy ++ x_ ++ _y
+        where   xy = (attachHeads x      y   (optAlignments xs       ys      ))
+                x_ = (attachHeads x      '-' (optAlignments xs       (y:ys)  ))
+                _y = (attachHeads '-'    y   (optAlignments (x:xs)   ys      ))
+
+    outputOptAlignments :: String -> String -> IO ()
+    outputOptAlignments s1 s2 = do
+        putStr "\n"
+        putStrLn $ "There are " ++ (show . length) res ++ " optimal alignments!"
+        recPrint res
+        where
+            res = optAlignments s1 s2
+            recPrint :: [AlignmentType] -> IO ()
+            recPrint [] = do putStrLn ""
+            recPrint ((a,b):xs) = do
+                putStr "\n"
+                putStrLn $ spaceify a
+                putStrLn $ spaceify b
+                recPrint xs
+                where
+                    spaceify :: String -> String
+                    spaceify [] = []
+                    spaceify (c:cs) = c : ' ' : spaceify cs 
