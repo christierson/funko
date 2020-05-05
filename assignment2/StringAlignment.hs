@@ -25,9 +25,9 @@ module StringAlignment where
             entry :: Int -> Int -> Int
             entry _ 0 = 0
             entry 0 _ = 0
-            entry i j
-                | x == y = 1 + getEntry (i - 1) (j - 1)
-                | otherwise = max (getEntry i (j - 1)) (getEntry (i - 1) j)
+            entry i j = charScore x y + max (getEntry i (j - 1)) (getEntry (i - 1) j)
+--                | x == y = 1 + getEntry (i - 1) (j - 1)
+--                | otherwise = max (getEntry i (j - 1)) (getEntry (i - 1) j)
                 where
                     x = xs !! (i - 1)
                     y = ys !! (j - 1)
@@ -41,21 +41,24 @@ module StringAlignment where
 
     type AlignmentType = (String,String)
 
+    charScore :: Char -> Char -> Int
+    charScore x y
+        | x == '-' = scoreSpace
+        | y == '-' = scoreSpace
+        | x == y = scoreMatch
+        | otherwise = scoreMismatch
+
+
     score :: String -> String -> Int
     score string [] = (*scoreSpace) $ length string
     score [] string = (*scoreSpace) $ length string
-    score (x:xs) (y:ys)
-        | x == '-' = scoreSpace + rest
-        | y == '-' = scoreSpace + rest
-        | x == y = scoreMatch + rest
-        | otherwise = scoreMismatch + rest
-            where rest = score xs ys
+    score (x:xs) (y:ys) = charScore x y + score xs ys
 
     optAlignments :: String -> String -> [AlignmentType]
     optAlignments [] [] = [("","")]
-    optAlignments (x:xs) [] = attachHeads x '-' (optAlignments xs [])
-    optAlignments [] (y:ys) = attachHeads '-' y (optAlignments [] ys)
-    optAlignments (x:xs) (y:ys) = maximaBy (\(a, b) -> score a b) 
-        (attachHeads x y (optAlignments xs ys)) ++
-        (attachHeads x '-' (optAlignments xs (y:ys))) ++
-        (attachHeads '-' y (optAlignments (x:xs) ys))
+    optAlignments (x:xs) [] = attachHeads x '-' $ optAlignments xs []
+    optAlignments [] (y:ys) = attachHeads '-' y $ optAlignments [] ys
+    optAlignments (x:xs) (y:ys) = maximaBy (uncurry score)
+        (attachHeads x      y   (optAlignments xs       ys      )) ++
+        (attachHeads x      '-' (optAlignments xs       (y:ys)  )) ++
+        (attachHeads '-'    y   (optAlignments (x:xs)   ys      ))
