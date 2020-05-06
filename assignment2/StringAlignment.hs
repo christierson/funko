@@ -72,8 +72,8 @@ module StringAlignment where
                 x_ = (attachHeads x      '-' (optAlignments xs       (y:ys)  ))
                 _y = (attachHeads '-'    y   (optAlignments (x:xs)   ys      ))
 
---    optAlignmentsOptimized :: String -> String -> [AlignmentType]
---    optAlignmentsOptimized (x:xs) (y:ys) = 
+    optAlignmentsOptimized :: String -> String -> [AlignmentType]
+    optAlignmentsOptimized (x:xs) (y:ys) = 
 
     outputOptAlignments :: String -> String -> IO ()
     outputOptAlignments s1 s2 = do
