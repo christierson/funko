@@ -73,7 +73,12 @@ module StringAlignment where
                 _y = (attachHeads '-'    y   (optAlignments (x:xs)   ys      ))
 
     optAlignmentsOptimized :: String -> String -> [AlignmentType]
-    optAlignmentsOptimized (x:xs) (y:ys) = 
+    optAlignmentsOptimized xs ys = getEntry (length xs) (length ys)
+        where
+            getEntry i j = table !! i !! j
+
+            table :: [[Int]]
+            table = [[entry i j | j <- [0..]] | i <- [0..]]
 
     outputOptAlignments :: String -> String -> IO ()
     outputOptAlignments s1 s2 = do
