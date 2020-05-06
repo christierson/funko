@@ -56,6 +56,10 @@ module StringAlignment where
                     x = xs !! (i - 1)
                     y = ys !! (j - 1)
 
+
+    attachLast :: a -> a -> [([a],[a])] -> [([a],[a])]
+    attachLast h1 h2 aList = [(xs ++ [h1], ys ++ [h2]) | (xs,ys) <- aList]
+
     attachHeads :: a -> a -> [([a],[a])] -> [([a],[a])]
     attachHeads h1 h2 aList = [(h1:xs,h2:ys) | (xs,ys) <- aList]
 
@@ -72,13 +76,34 @@ module StringAlignment where
                 x_ = (attachHeads x      '-' (optAlignments xs       (y:ys)  ))
                 _y = (attachHeads '-'    y   (optAlignments (x:xs)   ys      ))
 
+    type Entry = (Int, [AlignmentType])
+
     optAlignmentsOptimized :: String -> String -> [AlignmentType]
-    optAlignmentsOptimized xs ys = getEntry (length xs) (length ys)
+    optAlignmentsOptimized xs ys = snd $ getEntry (length xs) (length ys)
         where
+            getEntry :: Int -> Int -> Entry
             getEntry i j = table !! i !! j
 
-            table :: [[Int]]
+            table :: [[Entry]]
             table = [[entry i j | j <- [0..]] | i <- [0..]]
+
+            addChars :: Char -> Char -> Entry -> Entry
+            addChars x y (s, al) = (s + charScore x y, attachLast x y al)
+
+            entry :: Int -> Int -> Entry
+            entry 0 0 = (0, [("","")])
+            entry i 0 = addChars (xs !! (i - 1)) '-' $ getEntry (i - 1) 0
+            entry 0 j = addChars '-' (ys !! (j - 1)) $ getEntry 0 (j - 1)
+            entry i j = (fst $ head result, concatMap snd result)
+                where 
+                    result = maximaBy fst [
+                        addChars x y (getEntry (i-1) (j-1)),
+                        addChars x '-' (getEntry (i-1) j),
+                        addChars '-' y (getEntry i (j-1))]
+                
+                    x = xs !! (i - 1)
+                    y = ys !! (j - 1)
+            
 
     outputOptAlignments :: String -> String -> IO ()
     outputOptAlignments s1 s2 = do
