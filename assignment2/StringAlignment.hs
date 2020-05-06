@@ -13,30 +13,6 @@ module StringAlignment where
     string5 = "bananrepubliksinvasionsarmestabsadjutant"
     string6 = "kontrabasfiolfodralmakarmästarlärling"
     
-    -- ANVÄNDER SAMMA LOOKUP-TABELL SOM I MCS-PROBLEMET --
-    similarityScore :: String -> String -> Int
-    similarityScore xs ys = getEntry (length xs) (length ys)
-        where
-            getEntry i j = table !! i !! j
-
-            table :: [[Int]]
-            table = [[entry i j | j <- [0..]] | i <- [0..]]
-
-            entry :: Int -> Int -> Int
-            entry _ 0 = 0
-            entry 0 _ = 0
-            entry i j = charScore x y + max (getEntry i (j - 1)) (getEntry (i - 1) j)
-                where
-                    x = xs !! (i - 1)
-                    y = ys !! (j - 1)
-
-    attachHeads :: a -> a -> [([a],[a])] -> [([a],[a])]
-    attachHeads h1 h2 aList = [(h1:xs,h2:ys) | (xs,ys) <- aList]
-
-    maximaBy :: Ord b => (a -> b) -> [a] -> [a]
-    maximaBy f xs = filter (\x -> f x == m) xs
-        where m = maximum $ map f xs
-
     type AlignmentType = (String,String)
 
     charScore :: Char -> Char -> Int
@@ -51,6 +27,42 @@ module StringAlignment where
     score [] string = (*scoreSpace) $ length string
     score (x:xs) (y:ys) = charScore x y + score xs ys
 
+    similarityScore :: String -> String -> Int
+    similarityScore [] [] = 0
+    similarityScore [] ys = (*) scoreSpace $ length ys
+    similarityScore xs [] = (*) scoreSpace $ length xs
+    similarityScore (x:xs) (y:ys) = maximum [
+        charScore x y + similarityScore xs ys,
+        charScore x '-' + similarityScore xs (y:ys),
+        charScore '-' y + similarityScore (x:xs) ys]
+
+    similarityScoreOptimized :: String -> String -> Int
+    similarityScoreOptimized xs ys = getEntry (length xs) (length ys)
+        where
+            getEntry i j = table !! i !! j
+            
+            table :: [[Int]]
+            table = [[entry i j | j <- [0..]] | i <- [0..]]
+
+            entry :: Int -> Int -> Int
+            entry 0 0 = 0
+            entry 0 j = scoreSpace * j
+            entry i 0 = scoreSpace * i
+            entry i j = maximum [
+                charScore x     y   + getEntry (i - 1)  (j - 1),
+                charScore x     '-' + getEntry (i - 1)  j,
+                charScore '-'   y   + getEntry i        (j - 1)]
+                where
+                    x = xs !! (i - 1)
+                    y = ys !! (j - 1)
+
+    attachHeads :: a -> a -> [([a],[a])] -> [([a],[a])]
+    attachHeads h1 h2 aList = [(h1:xs,h2:ys) | (xs,ys) <- aList]
+
+    maximaBy :: Ord b => (a -> b) -> [a] -> [a]
+    maximaBy f xs = filter (\x -> f x == m) xs
+        where m = maximum $ map f xs
+
     optAlignments :: String -> String -> [AlignmentType]
     optAlignments [] [] = [("","")]
     optAlignments (x:xs) [] = attachHeads x '-' $ optAlignments xs []
@@ -60,6 +72,9 @@ module StringAlignment where
                 x_ = (attachHeads x      '-' (optAlignments xs       (y:ys)  ))
                 _y = (attachHeads '-'    y   (optAlignments (x:xs)   ys      ))
 
+--    optAlignmentsOptimized :: String -> String -> [AlignmentType]
+--    optAlignmentsOptimized (x:xs) (y:ys) = 
+
     outputOptAlignments :: String -> String -> IO ()
     outputOptAlignments s1 s2 = do
         putStr "\n"
@@ -68,7 +83,7 @@ module StringAlignment where
         where
             res = optAlignments s1 s2
             recPrint :: [AlignmentType] -> IO ()
-            recPrint [] = do putStrLn ""
+            recPrint [] = do putStr "\n"
             recPrint ((a,b):xs) = do
                 putStr "\n"
                 putStrLn $ spaceify a
