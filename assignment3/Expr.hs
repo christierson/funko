@@ -29,6 +29,7 @@ import qualified Dictionary
 
 data Expr = Num Integer | Var String | Add Expr Expr 
        | Sub Expr Expr | Mul Expr Expr | Div Expr Expr
+       | Power Expr Expr
          deriving Show
 
 type T = Expr
@@ -71,7 +72,17 @@ shw prec (Mul t u) = parens (prec>6) (shw 6 t ++ "*" ++ shw 6 u)
 shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
 
 value :: Expr -> Dictionary.T String Integer -> Integer
-value (Num n) _ = error "value not implemented"
+value (Num n) _ = n
+value (Var) d = case Dictionary.lookup v d of
+        Just r -> r
+        Nothing -> error ("Undefined " ++ v)
+value (Add a b) d = value a d + value b d
+value (Sub a b) d = value a d - value b d
+value (Mul a b) d = value a d * value b d
+value (Div a b) d = case value b d of 
+        0 -> error ("Division by zero")
+        _ -> div (value a d) (value b d)
+value (Power a b) d = value a d ^ value b d
 
 instance Parse Expr where
     parse = expr
