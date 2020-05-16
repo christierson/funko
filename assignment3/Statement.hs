@@ -36,5 +36,12 @@ exec (If cond thenStmts elseStmts: stmts) dict input =
     else exec (elseStmts: stmts) dict input
 
 instance Parse Statement where
-    parse = assignment ! ifStatement ! skipStatement ! beginStatement ! whileStatement ! readStatement ! writeStatement
+    parse = assignment ! 
+        ifStatement ! 
+        skipStatement ! 
+        beginStatement ! 
+        whileStatement ! 
+        readStatement ! 
+        writeStatement
+    
     toString = error "Statement.toString not implemented"
