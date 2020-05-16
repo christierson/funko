@@ -1,5 +1,5 @@
 module Parser(module CoreParser, T, digit, digitVal, chars, letter, err,
-              lit, number, iter, accept, require, token,
+              lit, number, iter, accept, require, token, newline,
               spaces, word, (-#), (#-)) where
 import Prelude hiding (return, fail)
 import Data.Char
@@ -14,6 +14,9 @@ err message cs = error (message++" near "++cs++"\n")
 
 iter :: Parser a -> Parser [a]  
 iter m = m # iter m >-> cons ! return [] 
+
+newline :: Parser String
+newline = iter $ char ? (/='\n')
 
 cons (a, b) = a:b
 

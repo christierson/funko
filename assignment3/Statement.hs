@@ -11,7 +11,8 @@ data Statement =
     Begin [Statement] |
     While Expr.T Statement |
     Read String |
-    Write Expr.T
+    Write Expr.T |
+    Comment String
     deriving Show
 
 assignment = word #- accept ":=" # Expr.parse #- require ";" >->
@@ -20,14 +21,15 @@ ifStatement = accept "if" -# Expr.parse # require "then" -# parse # require "els
     \((e, x), y) -> If e x y
 skipStatement = accept "skip" # require ";" >-> 
     \_ -> Skip
-beginStatement = accept "begin" -# iter parse #- require "end" >-> 
-    \xs -> Begin xs
+beginStatement = accept "begin" -# iter parse #- require "end" >-> Begin
+--    \xs -> Begin xs
 whileStatement = accept "while" -# Expr.parse #- require "do" # parse >-> 
     \(e, s) -> While e s
-readStatement = accept "read" -# word #- require ";" >-> 
-    \x -> Read x
-writeStatement = accept "write" -# Expr.parse #- require ";" >-> 
-    \x -> Write x
+readStatement = accept "read" -# word #- require ";" >-> Read
+--    \x -> Read x
+writeStatement = accept "write" -# Expr.parse #- require ";" >-> Write
+--    \x -> Write x
+comment = accept "--" -# newline #- require "\n" >-> Comment
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 exec (Assignment varName expr: stmts) dict input = exec stmts updated input
@@ -44,7 +46,8 @@ exec (While cond doStmts: stmts) dict input =
         else exec stmts dict input
 exec (Read valName: stmts) dict (i:input) = exec stmts updated input
     where updated = Dictionary.insert (valName, i) dict
-exex (Write expr: stmts) dict input = Expr.value expr dict : (exec stmts dict input)
+exec (Write expr: stmts) dict input = Expr.value expr dict : (exec stmts dict input)
+exec (Comment cmt: stmts) dict input = exec stmts dict input
 
 instance Parse Statement where
     parse = assignment ! 
@@ -53,6 +56,7 @@ instance Parse Statement where
         beginStatement ! 
         whileStatement ! 
         readStatement ! 
-        writeStatement
+        writeStatement !
+        comment
     
     toString = error "Statement.toString not implemented"
