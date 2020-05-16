@@ -4,7 +4,7 @@ module Parser(module CoreParser, T, digit, digitVal, chars, letter, err,
 import Prelude hiding (return, fail)
 import Data.Char
 import CoreParser
-import Statements
+-- import Statement
 infixl 7 -#, #- 
 
 type T a = Parser a
@@ -15,35 +15,36 @@ err message cs = error (message++" near "++cs++"\n")
 iter :: Parser a -> Parser [a]  
 iter m = m # iter m >-> cons ! return [] 
 
-cons(a, b) = a:b
+cons (a, b) = a:b
 
 (-#) :: Parser a -> Parser b -> Parser b
-m -# n = m # n >-> snd
+m -# n = (m # n) >-> snd
 
 (#-) :: Parser a -> Parser b -> Parser a
-m #- n = m # n >-> fst
+m #- n = (m # n) >-> fst
 
 spaces :: Parser String
-spaces =  error iter $ char ? isSpace
+spaces = iter $ char ? isSpace
 
 token :: Parser a -> Parser a
 token m = m #- spaces
 
 letter :: Parser Char
-letter = char ? isLetter
+letter =  char ? isAlpha
 
 word :: Parser String
 word = token (letter # iter letter >-> cons)
 
 chars :: Int -> Parser String
-chars 0 = return []
-chars iter $ char ? (/='\n')
+chars n cs
+    | n > (length cs) = Nothing
+    | otherwise = return (take n cs) (drop n cs)
 
 accept :: String -> Parser String
 accept w = (token (chars (length w))) ? (==w)
 
 require :: String -> Parser String
-require w = accept w ! err ("Expected " ++ w)
+require w = accept w ! err ("Program error: expecting " ++ w)
 
 lit :: Char -> Parser Char
 lit c = token char ? (==c)

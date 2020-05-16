@@ -73,16 +73,15 @@ shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
 
 value :: Expr -> Dictionary.T String Integer -> Integer
 value (Num n) _ = n
-value (Var) d = case Dictionary.lookup v d of
+value (Var v) d = case Dictionary.lookup v d of
         Just r -> r
         Nothing -> error ("Undefined " ++ v)
-value (Add a b) d = value a d + value b d
-value (Sub a b) d = value a d - value b d
-value (Mul a b) d = value a d * value b d
-value (Div a b) d = case value b d of 
+value (Add t u) d = (value t d) + (value u d)
+value (Sub t u) d = (value t d) - (value u d)
+value (Mul t u) d = (value t d) * (value u d)
+value (Div t u) d = case value u d of 
         0 -> error ("Division by zero")
-        _ -> div (value a d) (value b d)
-value (Power a b) d = value a d ^ value b d
+        _ -> div (value t d) (value u d)
 
 instance Parse Expr where
     parse = expr
