@@ -30,10 +30,21 @@ writeStatement = accept "write" -# Expr.parse #- require ";" >->
     \x -> Write x
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
+exec (Assignment varName expr: stmts) dict input = exec stmts updated input
+    where updated = Dictionary.insert (varName, Expr.value expr dict) dict
 exec (If cond thenStmts elseStmts: stmts) dict input = 
     if (Expr.value cond dict)>0 
-    then exec (thenStmts: stmts) dict input
-    else exec (elseStmts: stmts) dict input
+        then exec (thenStmts: stmts) dict input
+        else exec (elseStmts: stmts) dict input
+exec (Skip: stmts) dict input = exec stmts dict input
+exec (Begin xs: stmts) dict input = exec (xs ++ stmts) dict input
+exec (While cond doStmts: stmts) dict input =
+    if (Expr.value cond dict)>0
+        then exec (doStmts:(While cond doStmts: stmts)) dict input
+        else exec stmts dict input
+exec (Read valName: stmts) dict (i:input) = exec stmts updated input
+    where updated = Dictionary.insert (valName, i) dict
+exex (Write expr: stmts) dict input = Expr.value expr dict : (exec stmts dict input)
 
 instance Parse Statement where
     parse = assignment ! 
