@@ -19,7 +19,7 @@ assignment = word #- accept ":=" # Expr.parse #- require ";" >->
     \(s, e) -> Assignment s e
 ifStatement = accept "if" -# Expr.parse # require "then" -# parse # require "else" -# parse >->
     \((e, x), y) -> If e x y
-skipStatement = accept "skip" # require ";" >-> 
+skipStatement = accept "skip" # require ";" >->
     \_ -> Skip
 beginStatement = accept "begin" -# iter parse #- require "end" >-> Begin
 --    \xs -> Begin xs
@@ -32,6 +32,7 @@ writeStatement = accept "write" -# Expr.parse #- require ";" >-> Write
 comment = accept "--" -# newline #- require "\n" >-> Comment
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
+exec [] _ _ = []
 exec (Assignment varName expr: stmts) dict input = exec stmts updated input
     where updated = Dictionary.insert (varName, Expr.value expr dict) dict
 exec (If cond thenStmts elseStmts: stmts) dict input = 
