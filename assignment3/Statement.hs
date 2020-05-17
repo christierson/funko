@@ -50,6 +50,26 @@ exec (Read valName: stmts) dict (i:input) = exec stmts updated input
 exec (Write expr: stmts) dict input = Expr.value expr dict : (exec stmts dict input)
 exec (Comment cmt: stmts) dict input = exec stmts dict input
 
+indent :: Int -> String
+indent n = replicate (2*n) ' '
+
+shw :: Int -> T -> String
+shw n (Assignment varName expr) = 
+    indent n ++ varName ++ " := " ++ Expr.toString expr ++ ";\n"
+shw n (If cond thenStmts elseStmts) =
+    indent n ++ "if " ++ Expr.toString cond ++ " then\n" ++ shw (n+1) thenStmts ++ 
+    indent n ++ "else\n" ++ shw (n+1) elseStmts
+shw n (Skip) = 
+    indent n ++ "skip;\n"
+shw n (Begin ss) =
+    indent n ++ "begin\n" ++ concatMap (shw (n+1)) ss ++ indent n ++ "end"
+shw n (While cond doStmts) =
+    indent n ++ "while " ++ Expr.toString cond ++ " do\n" ++ shw (n+1) doStmts ++ "\n"
+shw n (Read valName) =
+    indent n ++ "read " ++ valName ++ ";\n"
+shw n (Write expr) =
+    indent n ++ "write " ++ Expr.toString expr ++ ";\n" 
+
 instance Parse Statement where
     parse = assignment ! 
         ifStatement ! 
@@ -60,4 +80,4 @@ instance Parse Statement where
         writeStatement !
         comment
     
-    toString = error "Statement.toString not implemented"
+    toString = shw 0
