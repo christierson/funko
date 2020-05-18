@@ -5,7 +5,7 @@ import Program
 
 p0, p1, p2, p3, p4 :: Program.T
 
-p0 = fromString  ("\
+{-p0 = fromString  ("\
 \read k;\
 \read n;\
 \m := 1;\
@@ -16,7 +16,11 @@ p0 = fromString  ("\
 \    else\
 \      write m;\
 \    m := m + 1;\
-\  end")
+\  end")-}
+
+p0 = fromString  ("\
+\m := 2 ^ 3 ^ 4;\
+\write m;")
 
 p1 = fromString  ("\
 \read n;\

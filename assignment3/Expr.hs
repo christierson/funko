@@ -34,13 +34,15 @@ data Expr = Num Integer | Var String | Add Expr Expr
 
 type T = Expr
 
-var, num, factor, term, expr :: Parser Expr
+var, num, factor, term, expr, pow :: Parser Expr
 
-term', expr' :: Expr -> Parser Expr
+term', expr', pow' :: Expr -> Parser Expr
 
 var = word >-> Var
 
 num = number >-> Num
+
+powOp = lit '^' >-> (\_ -> Power)
 
 mulOp = lit '*' >-> (\_ -> Mul) !
         lit '/' >-> (\_ -> Div)
@@ -50,14 +52,19 @@ addOp = lit '+' >-> (\_ -> Add) !
 
 bldOp e (oper,e') = oper e e'
 
+powFold e xs = foldr1 (Power) $ e:(map snd xs)
+
 factor = num !
          var !
          lit '(' -# expr #- lit ')' !
          err "illegal factor"
-             
-term' e = mulOp # factor >-> bldOp e #> term' ! return e
-term = factor #> term'
-       
+
+pow' e = iter (powOp # factor) >-> powFold e ! return e
+pow = factor #> pow'
+
+term' e = mulOp # pow >-> bldOp e #> term' ! return e
+term = pow #> term'
+
 expr' e = addOp # term >-> bldOp e #> expr' ! return e
 expr = term #> expr'
 
@@ -70,18 +77,20 @@ shw prec (Add t u) = parens (prec>5) (shw 5 t ++ "+" ++ shw 5 u)
 shw prec (Sub t u) = parens (prec>5) (shw 5 t ++ "-" ++ shw 6 u)
 shw prec (Mul t u) = parens (prec>6) (shw 6 t ++ "*" ++ shw 6 u)
 shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
+shw prec (Power t u) = parens (prec>7) (shw 7 t ++ "^" ++ shw 8 u)
 
 value :: Expr -> Dictionary.T String Integer -> Integer
 value (Num n) _ = n
 value (Var v) d = case Dictionary.lookup v d of
         Just r -> r
         Nothing -> error ("Undefined " ++ v)
-value (Add t u) d = (value t d) + (value u d)
-value (Sub t u) d = (value t d) - (value u d)
-value (Mul t u) d = (value t d) * (value u d)
-value (Div t u) d = case value u d of 
+value (Add a b) d = (value a d) + (value b d)
+value (Sub a b) d = (value a d) - (value b d)
+value (Mul a b) d = (value a d) * (value b d)
+value (Div a b) d = case value a d of 
         0 -> error ("Division by zero")
-        _ -> div (value t d) (value u d)
+        _ -> div (value a d) (value b d)
+value (Power a b) d = (value a d) ^ (value b d)
 
 instance Parse Expr where
     parse = expr
