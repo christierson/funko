@@ -1,5 +1,5 @@
 module Parser(module CoreParser, T, digit, digitVal, chars, letter, err,
-              lit, number, iter, accept, require, token, newline,
+              lit, number, iter, accept, require, token,
               spaces, word, (-#), (#-)) where
 import Prelude hiding (return, fail)
 import Data.Char
@@ -15,9 +15,6 @@ err message cs = error (message++" near "++cs++"\n")
 iter :: Parser a -> Parser [a]  
 iter m = m # iter m >-> cons ! return [] 
 
-newline :: Parser String
-newline = iter $ char ? (/='\n')
-
 cons (a, b) = a:b
 
 (-#) :: Parser a -> Parser b -> Parser b
@@ -29,8 +26,14 @@ m #- n = (m # n) >-> fst
 spaces :: Parser String
 spaces = iter $ char ? isSpace
 
+newline :: Parser String
+newline = (iter (char ? (/='\n')) #- require "\n")
+
+comment :: Parser String
+comment = (accept "--") -# newline
+
 token :: Parser a -> Parser a
-token m = m #- spaces
+token m = m #- spaces #- comment ! m #- spaces
 
 letter :: Parser Char
 letter =  char ? isAlpha

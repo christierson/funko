@@ -3,9 +3,9 @@ module TestProgram where
 
 import Program
 
-p0, p1, p2, p3, p4 :: Program.T
+p0, p1, p2, p3, p4, p5 :: Program.T
 
-{-p0 = fromString  ("\
+p0 = fromString  ("\
 \read k;\
 \read n;\
 \m := 1;\
@@ -16,11 +16,7 @@ p0, p1, p2, p3, p4 :: Program.T
 \    else\
 \      write m;\
 \    m := m + 1;\
-\  end")-}
-
-p0 = fromString  ("\
-\m := 2 ^ 3 ^ 4;\
-\write m;")
+\  end")
 
 p1 = fromString  ("\
 \read n;\
@@ -83,6 +79,15 @@ s4 = "\
 \  end\
 \write a;"
 
+s5 = "\
+\read a;\
+\read -- input a value\n\
+\     -- into variable b:\n\
+\     b;\
+\s := 3;"
+
 p4 = fromString s4
+
+p5 = fromString s5
 
 rp4 = Program.exec p4 [4,4]

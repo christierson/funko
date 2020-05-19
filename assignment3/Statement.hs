@@ -11,8 +11,7 @@ data Statement =
     Begin [Statement] |
     While Expr.T Statement |
     Read String |
-    Write Expr.T |
-    Comment String
+    Write Expr.T
     deriving Show
 
 assignment = word #- accept ":=" # Expr.parse #- require ";" >->
@@ -22,14 +21,11 @@ ifStatement = accept "if" -# Expr.parse # require "then" -# parse # require "els
 skipStatement = accept "skip" # require ";" >->
     \_ -> Skip
 beginStatement = accept "begin" -# iter parse #- require "end" >-> Begin
---    \xs -> Begin xs
 whileStatement = accept "while" -# Expr.parse #- require "do" # parse >-> 
     \(e, s) -> While e s
 readStatement = accept "read" -# word #- require ";" >-> Read
---    \x -> Read x
 writeStatement = accept "write" -# Expr.parse #- require ";" >-> Write
---    \x -> Write x
-comment = accept "--" -# newline #- require "\n" >-> Comment
+
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 exec [] _ _ = []
@@ -48,7 +44,6 @@ exec (While cond doStmts: stmts) dict input =
 exec (Read valName: stmts) dict (i:input) = exec stmts updated input
     where updated = Dictionary.insert (valName, i) dict
 exec (Write expr: stmts) dict input = Expr.value expr dict : (exec stmts dict input)
-exec (Comment cmt: stmts) dict input = exec stmts dict input
 
 indent :: Int -> String
 indent n = replicate (2*n) ' '
@@ -68,7 +63,7 @@ shw n (While cond doStmts) =
 shw n (Read valName) =
     indent n ++ "read " ++ valName ++ ";\n"
 shw n (Write expr) =
-    indent n ++ "write " ++ Expr.toString expr ++ ";\n" 
+    indent n ++ "write " ++ Expr.toString expr ++ ";\n"
 
 instance Parse Statement where
     parse = assignment ! 
@@ -77,7 +72,6 @@ instance Parse Statement where
         beginStatement ! 
         whileStatement ! 
         readStatement ! 
-        writeStatement !
-        comment
+        writeStatement
     
     toString = shw 0

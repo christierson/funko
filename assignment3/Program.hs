@@ -3,7 +3,7 @@ import Parser hiding (T)
 import qualified Statement
 import qualified Dictionary
 import Prelude hiding (return, fail)
-newtype T = Program [Statement.T]
+newtype T = Program [Statement.T] deriving Show
 
 instance Parse T where
   parse = iter Statement.parse >-> Program
